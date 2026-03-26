@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gaussian Beam Visualizer</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #0d1b2f;
+      --panel: rgba(255,255,255,0.055);
+      --panel2: rgba(255,255,255,0.035);
+      --line: rgba(255,255,255,0.12);
+      --text: #eef5ff;
+      --muted: #a9bddb;
+      --accent: #77c2ff;
+      --accent2: #8ff7d8;
+      --accent3: #f8d36e;
+      --danger: #ff8e8e;
+      --shadow: 0 18px 40px rgba(0,0,0,0.28);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, #173768 0%, transparent 28%),
+        radial-gradient(circle at 100% 0%, #0f2547 0%, transparent 22%),
+        linear-gradient(180deg, #06101d 0%, #0a1526 100%);
+    }
+    .wrap {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px 18px 44px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+    .hero .card { padding: 22px 24px; }
+    h1 { margin: 0 0 10px; font-size: 34px; line-height: 1.08; }
+    h2 { margin: 0 0 10px; font-size: 22px; }
+    h3 { margin: 0 0 8px; font-size: 17px; }
+    p, li { color: var(--muted); line-height: 1.56; }
+    .pillbar { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    .pill {
+      border-radius: 999px;
+      border: 1px solid rgba(119,194,255,0.25);
+      background: rgba(119,194,255,0.1);
+      color: #e9f5ff;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .controls { position: sticky; top: 12px; }
+    .section {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .section:last-child { border-bottom: none; }
+    .field { margin: 12px 0 14px; }
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 7px;
+      color: #e7f0ff;
+      font-size: 13px;
+    }
+    .field small { color: var(--muted); font-size: 12px; }
+    input[type="number"], select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+    input[type="range"] { width: 100%; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #061322;
+      box-shadow: 0 12px 24px rgba(6, 19, 34, 0.16);
+    }
+    button:hover { transform: translateY(-1px); }
+    button.secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.13);
+      box-shadow: none;
+    }
+    button.resetSoft {
+      background: linear-gradient(135deg, #d9dee8, #bcc5d3);
+      color: #1d2735;
+      box-shadow: 0 10px 24px rgba(20, 31, 45, 0.16);
+    }
+    .main { display: grid; gap: 18px; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    .metric {
+      min-height: 112px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 14px;
+    }
+    .metric .k { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+    .metric .v { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .metric .s { color: #dde9ff; font-size: 12px; line-height: 1.45; }
+    .two {
+      display: grid;
+      grid-template-columns: 1.22fr 0.78fr;
+      gap: 18px;
+    }
+    .panel-body { padding: 18px; }
+    .plot {
+      width: 100%;
+      height: 420px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, rgba(5,10,20,0.88), rgba(5,10,20,0.72));
+      overflow: hidden;
+      position: relative;
+    }
+    .plot.small { height: 360px; }
+    .plot svg { width: 100%; height: 100%; display: block; }
+    .plotTitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .plotTools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .plotToolBtn {
+      padding: 8px 11px;
+      font-size: 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+      box-shadow: none;
+    }
+    .viewReadout {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .plotTitle .sub { color: var(--muted); font-size: 13px; }
+    .sliderWrap {
+      margin-top: 12px;
+      padding: 10px 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .sliderHead {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: #dfeeff;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    .table th, .table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .table th { color: #e7f0ff; background: rgba(255,255,255,0.045); }
+    .table td { color: var(--muted); }
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 14px;
+      color: #dfeaff;
+      font-size: 13px;
+      line-height: 1.55;
+      overflow-x: auto;
+    }
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .interactionHint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+    .legend i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .good { color: var(--accent2); background: rgba(143,247,216,0.1); border-color: rgba(143,247,216,0.18); }
+    .warn { color: var(--accent3); background: rgba(248,211,110,0.1); border-color: rgba(248,211,110,0.18); }
+    .bad { color: var(--danger); background: rgba(255,142,142,0.1); border-color: rgba(255,142,142,0.18); }
+    .foot {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      padding: 0 18px 18px;
+    }
+    @media (max-width: 1160px) {
+      .hero, .layout, .two { grid-template-columns: 1fr; }
+      .controls { position: static; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (max-width: 720px) {
+      .metrics { grid-template-columns: 1fr; }
+      h1 { font-size: 29px; }
+      .plot { height: 360px; }
+      .plot.small { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="card">
+        <h1>Gaussian Beam Visualizer</h1>
+        <p>A single-file interactive page for beam-geometry checks. Set the wavelength, focal FWHM diameter, waist location, box half-width, and pulse duration, then inspect the beam envelope, cross-section, Gouy phase, Rayleigh length, curvature radius, and clipping risk at any longitudinal slice.</p>
+        <div class="pillbar">
+          <div class="pill">Strict 2D slab</div>
+          <div class="pill">Standard 3D circular beam</div>
+          <div class="pill">2D practical projection</div>
+          <div class="pill">Draggable slice selector</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Conventions used here</h2>
+        <p>The input <strong>d<sub>FWHM</sub></strong> is the <strong>intensity</strong> FWHM diameter at the waist. The corresponding waist parameter is</p>
+        <div class="formula">w0 = d_FWHM / sqrt(2 ln 2)
+I(y) ∝ exp[-2 (y / w)^2]
+d_FWHM(x) = sqrt(2 ln 2) · w(x)</div>
+        <p>This page displays the beam from the injection plane to the waist and the same distance beyond it. You can inspect any longitudinal slice, zoom beyond the default domain, and return to the waist with Fit view.</p>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="card controls">
+        <div class="section">
+          <h2>Inputs</h2>
+          <div class="field">
+            <label for="model">Model <small>Choose the geometry convention</small></label>
+            <select id="model">
+              <option value="practical">2D practical projection</option>
+              <option value="2d">Strict 2D slab</option>
+              <option value="3d">Standard 3D circular</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="lambdaNm">Wavelength λ (nm)</label>
+            <input id="lambdaNm" type="number" step="1" value="800" />
+          </div>
+          <div class="field">
+            <label for="dFwhmUm">Waist intensity FWHM diameter d<sub>FWHM</sub> (µm)</label>
+            <input id="dFwhmUm" type="number" step="0.01" value="5.4" />
+          </div>
+          <div class="field">
+            <label for="focusDistUm">Injection plane to waist distance (µm)</label>
+            <input id="focusDistUm" type="number" step="0.1" value="1020" />
+          </div>
+          <div class="field">
+            <label for="yHalfWidthUm">Box half-width |y|<sub>max</sub> (µm)</label>
+            <input id="yHalfWidthUm" type="number" step="0.1" value="40" />
+          </div>
+          <div class="field">
+            <label for="pulseFwhmFs">Pulse intensity FWHM (fs)</label>
+            <input id="pulseFwhmFs" type="number" step="0.1" value="28" />
+          </div>
+          <div class="field">
+            <label for="queryXUm">Slice position x from injection plane (µm)</label>
+            <input id="queryXUm" type="number" step="0.1" value="1020" />
+          </div>
+          <div class="buttons">
+            <button id="resetBtn" class="resetSoft">Reset</button>
+            <button id="copyBtn" class="secondary">Copy summary</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Quick formulas</h3>
+          <div class="formula" id="formulaBox"></div>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="card">
+          <div class="metrics" id="metrics"></div>
+        </div>
+
+        <div class="two">
+          <div class="card">
+            <div class="panel-body">
+              <div class="plotTitle">
+                <div>
+                  <h2>Propagation envelope</h2>
+                  <div class="sub">The default view spans from the injection plane to the same distance beyond the waist. Zooming out shows the same analytic Gaussian continuation beyond that default span.</div>
+                </div>
+                <div class="plotTools">
+                  <div class="badge" id="clipBadge"></div>
+                  <button class="plotToolBtn" id="fitViewBtn" type="button">Fit view</button>
+                </div>
+              </div>
+              <div class="plot" id="envelopePlot"></div>
+              <div class="interactionHint">Wheel to zoom, drag the gold slice line to move the slice, or drag elsewhere in the plot to pan. The view can extend beyond the default domain without flattening the envelope.</div>
+              <div class="interactionHint" id="viewReadout"></div>
+              <div class="legend">
+                <span><i style="background:#77c2ff"></i> ± w(x)</span>
+                <span><i style="background:#8ff7d8"></i> waist plane</span>
+                <span><i style="background:#f8d36e"></i> selected slice</span>
+                <span><i style="background:#ff8e8e"></i> box half-width</span>
+              </div>
+              <div class="sliderWrap">
+                <div class="sliderHead">
+                  <span>Move the slice selector</span>
+                  <strong id="sliderReadout"></strong>
+                </div>
+                <input id="sliceSlider" type="range" min="0" max="1000" step="1" value="0" />
+                <div class="ticks">
+                  <span id="tickLeft"></span>
+                  <span id="tickMid"></span>
+                  <span id="tickRight"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="panel-body">
+              <div class="plotTitle">
+                <div>
+                  <h2>Transverse intensity profile</h2>
+                  <div class="sub">Intensity slice at the currently selected x position.</div>
+                </div>
+                <div class="badge" id="edgeBadge"></div>
+              </div>
+              <div class="plot small" id="profilePlot"></div>
+              <div class="legend">
+                <span><i style="background:#77c2ff"></i> normalized intensity</span>
+                <span><i style="background:#f8d36e"></i> FWHM points</span>
+                <span><i style="background:#ff8e8e"></i> box boundaries</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="card">
+            <div class="panel-body">
+              <h2>Clipping thresholds</h2>
+              <table class="table" id="clipTable"></table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="panel-body">
+              <h2>Temporal Gaussian conversion</h2>
+              <table class="table" id="timeTable"></table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="panel-body">
+            <h2>Plain-text calculation summary</h2>
+            <div class="formula" id="summaryBox"></div>
+          </div>
+          <div class="foot">
+            Tip: if the box half-width is much smaller than the beam radius at the injection plane, the beam is strongly clipped before it ever reaches the waist. Reducing the waist diameter while keeping the waist far away usually makes clipping worse, not better, because the Rayleigh length becomes shorter and the beam diverges faster.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const inputs = ["model", "lambdaNm", "dFwhmUm", "focusDistUm", "yHalfWidthUm", "pulseFwhmFs", "queryXUm"].map($);
+    const defaults = {
+      model: "practical",
+      lambdaNm: 800,
+      dFwhmUm: 5.4,
+      focusDistUm: 1020,
+      yHalfWidthUm: 40,
+      pulseFwhmFs: 28,
+      queryXUm: 1020,
+    };
+    let envelopeView = null;
+    let lastFocusDistUm = defaults.focusDistUm;
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function fmt(v, d = 3) {
+      if (!isFinite(v)) return "—";
+      const av = Math.abs(v);
+      if (av >= 1000) return v.toFixed(0);
+      if (av >= 100) return v.toFixed(1);
+      if (av >= 10) return v.toFixed(2);
+      if (av >= 1) return v.toFixed(3);
+      if (av >= 0.01) return v.toFixed(4);
+      return v.toExponential(3);
+    }
+    function fmtPercent(frac) { return (100 * frac).toFixed(frac < 0.01 ? 3 : frac < 0.1 ? 2 : 1) + "%"; }
+    function scaledUnitFromUm(maxUm) {
+      if (maxUm >= 2000) return { scale: 1000, unit: "mm" };
+      return { scale: 1, unit: "µm" };
+    }
+    function niceTicks(min, max, count = 5) {
+      const span = Math.max(1e-12, max - min);
+      const raw = span / Math.max(1, count - 1);
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const norm = raw / mag;
+      const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+      const start = Math.ceil(min / step) * step;
+      const ticks = [];
+      for (let x = start; x <= max + step * 0.5; x += step) ticks.push(+x.toFixed(12));
+      return ticks;
+    }
+    function escapeHtml(s) {
+      return s.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
+    }
+
+    function getModelSpec(model) {
+      if (model === "2d") return { label: "Strict 2D slab", ampPower: 0.5, gouyFactor: 0.5 };
+      if (model === "3d") return { label: "Standard 3D circular", ampPower: 1.0, gouyFactor: 1.0 };
+      return { label: "2D practical projection", ampPower: 0.5, gouyFactor: 1.0 };
+    }
+
+    function beamAt(xFromInjectionUm, cfg) {
+      const z = xFromInjectionUm - cfg.focusDistUm;
+      const u = z / cfg.xRUm;
+      const w = cfg.w0Um * Math.sqrt(1 + u * u);
+      const R = Math.abs(z) < 1e-14 ? Infinity : z * (1 + 1 / (u * u));
+      const gouy = cfg.modelSpec.gouyFactor * Math.atan2(z, cfg.xRUm);
+      const ampFactor = Math.pow(cfg.w0Um / w, cfg.modelSpec.ampPower);
+      return { zUm: z, wUm: w, RUm: R, gouyRad: gouy, ampFactor };
+    }
+
+    function defaultEnvelopeView(cfg) {
+      let maxW = 0;
+      for (let i = 0; i <= 400; i++) {
+        const x = cfg.xMaxUm * i / 400;
+        const w = beamAt(x, cfg).wUm;
+        maxW = Math.max(maxW, w);
+      }
+      const yPad = Math.max(maxW * 1.12, cfg.yHalfWidthUm * 1.22);
+      return { xMin: 0, xMax: cfg.xMaxUm, yMin: -yPad, yMax: yPad };
+    }
+
+    function resetEnvelopeView(cfg) {
+      envelopeView = defaultEnvelopeView(cfg);
+    }
+
+    function currentConfig() {
+      const model = $("model").value;
+      const lambdaNm = Math.max(1e-6, +$("lambdaNm").value || defaults.lambdaNm);
+      const dFwhmUm = Math.max(1e-6, +$("dFwhmUm").value || defaults.dFwhmUm);
+      const focusDistUm = Math.max(1e-6, +$("focusDistUm").value || defaults.focusDistUm);
+      const yHalfWidthUm = Math.max(1e-6, +$("yHalfWidthUm").value || defaults.yHalfWidthUm);
+      const pulseFwhmFs = Math.max(1e-6, +$("pulseFwhmFs").value || defaults.pulseFwhmFs);
+      let queryXUm = +$("queryXUm").value;
+      const xMaxUm = 2 * focusDistUm;
+      queryXUm = clamp(isFinite(queryXUm) ? queryXUm : focusDistUm, 0, xMaxUm);
+      $("queryXUm").value = fmt(queryXUm, 4);
+
+      const lambdaUm = lambdaNm * 1e-3;
+      const w0Um = dFwhmUm / Math.sqrt(2 * Math.log(2));
+      const xRUm = Math.PI * w0Um * w0Um / lambdaUm;
+      const cfg = {
+        model, lambdaNm, lambdaUm, dFwhmUm, focusDistUm, yHalfWidthUm, pulseFwhmFs, queryXUm,
+        xMaxUm, w0Um, xRUm, modelSpec: getModelSpec(model),
+      };
+      if (!envelopeView || Math.abs(lastFocusDistUm - focusDistUm) > 1e-9) {
+        resetEnvelopeView(cfg);
+        lastFocusDistUm = focusDistUm;
+      }
+      return cfg;
+    }
+
+    function buildMetrics(cfg) {
+      const b = beamAt(cfg.queryXUm, cfg);
+      const dFwhmHere = Math.sqrt(2 * Math.log(2)) * b.wUm;
+      const edgeIntensity = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b.wUm, 2));
+      const metrics = [
+        ["Waist radius w₀", `${fmt(cfg.w0Um)} µm`, `From the input waist intensity FWHM diameter ${fmt(cfg.dFwhmUm)} µm.`],
+        ["Rayleigh length xᵣ", `${fmt(cfg.xRUm)} µm`, `${fmt(cfg.xRUm / 1000)} mm`],
+        ["Beam radius w(x)", `${fmt(b.wUm)} µm`, `At the selected slice x = ${fmt(cfg.queryXUm)} µm.`],
+        ["Intensity FWHM diameter", `${fmt(dFwhmHere)} µm`, `Computed from d_FWHM(x) = sqrt(2 ln 2) · w(x).`],
+        ["Curvature radius R(x)", `${isFinite(b.RUm) ? fmt(b.RUm) + ' µm' : '∞'}`, `Sign follows the distance from the waist.`],
+        ["Gouy phase", `${fmt(b.gouyRad)} rad`, `${fmt(b.gouyRad * 180 / Math.PI)}°`],
+        ["Edge intensity at |y|max", `${fmtPercent(edgeIntensity)}`, `Normalized intensity at y = ±${fmt(cfg.yHalfWidthUm)} µm.`],
+        ["Amplitude factor", `${fmt(b.ampFactor)}`, `${cfg.modelSpec.label}: (w0/w)^${cfg.modelSpec.ampPower}`],
+      ];
+      $("metrics").innerHTML = metrics.map(([k, v, s]) => `
+        <div class="metric">
+          <div class="k">${k}</div>
+          <div class="v">${v}</div>
+          <div class="s">${s}</div>
+        </div>`).join("");
+    }
+
+    function buildFormulas(cfg) {
+      $("formulaBox").textContent =
+`w0 = d_FWHM / sqrt(2 ln 2)
+xR = π w0² / λ
+w(x) = w0 √(1 + ((x - x_waist) / xR)²)
+R(x) = (x - x_waist) [1 + (xR / (x - x_waist))²]
+ψ(x) = ${cfg.modelSpec.gouyFactor} · atan((x - x_waist) / xR)
+A(x) ∝ (w0 / w(x))^${cfg.modelSpec.ampPower}
+I(y; x) ∝ exp[-2 (y / w(x))²]`;
+    }
+
+    function buildClipTable(cfg) {
+      const thresholds = [0.10, 0.05, 0.01, 0.001];
+      const rows = thresholds.map(t => {
+        const yReq = cfg.w0Um * Math.sqrt(1 + Math.pow(cfg.focusDistUm / cfg.xRUm, 2));
+        const halfWidth = yReq * Math.sqrt(-0.5 * Math.log(t));
+        return { t, halfWidth, fullWidth: 2 * halfWidth };
+      });
+      $("clipTable").innerHTML = `
+        <thead>
+          <tr><th>Target edge intensity</th><th>Required half-width</th><th>Required full width</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `<tr><td>${fmtPercent(r.t)}</td><td>${fmt(r.halfWidth)} µm</td><td>${fmt(r.fullWidth)} µm</td></tr>`).join("")}
+        </tbody>`;
+    }
+
+    function buildTimeTable(cfg) {
+      const sigma = cfg.pulseFwhmFs / (2 * Math.sqrt(Math.log(2)));
+      const gaussArgWidth = Math.sqrt(2) * sigma;
+      $("timeTable").innerHTML = `
+        <thead>
+          <tr><th>Quantity</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Intensity FWHM</td><td>${fmt(cfg.pulseFwhmFs)} fs</td></tr>
+          <tr><td>σ for exp[-((t-t₀)/σ)²]</td><td>${fmt(sigma)} fs</td></tr>
+          <tr><td>Width used in gauss(t, t₀, width)</td><td>${fmt(gaussArgWidth)} fs</td></tr>
+        </tbody>`;
+    }
+
+    function buildSummary(cfg) {
+      const b0 = beamAt(0, cfg);
+      const bq = beamAt(cfg.queryXUm, cfg);
+      const edge0 = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b0.wUm, 2));
+      const edgeq = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / bq.wUm, 2));
+      const txt =
+`Model: ${cfg.modelSpec.label}
+λ = ${fmt(cfg.lambdaNm)} nm
+Waist intensity FWHM diameter d_FWHM = ${fmt(cfg.dFwhmUm)} µm
+Waist radius w0 = ${fmt(cfg.w0Um)} µm
+Injection plane to waist distance = ${fmt(cfg.focusDistUm)} µm
+Rayleigh length xR = ${fmt(cfg.xRUm)} µm
+
+At the injection plane x = 0:
+  w(0) = ${fmt(b0.wUm)} µm
+  d_FWHM(0) = ${fmt(Math.sqrt(2 * Math.log(2)) * b0.wUm)} µm
+  Gouy phase ψ(0) = ${fmt(b0.gouyRad)} rad
+  I(|y|max)/I0 = ${fmtPercent(edge0)}
+
+At the selected slice x = ${fmt(cfg.queryXUm)} µm:
+  w(x) = ${fmt(bq.wUm)} µm
+  d_FWHM(x) = ${fmt(Math.sqrt(2 * Math.log(2)) * bq.wUm)} µm
+  R(x) = ${isFinite(bq.RUm) ? fmt(bq.RUm) + ' µm' : '∞'}
+  Gouy phase ψ(x) = ${fmt(bq.gouyRad)} rad
+  I(|y|max)/I0 = ${fmtPercent(edgeq)}
+
+Model exponents:
+  Amplitude ∝ (w0 / w)^${cfg.modelSpec.ampPower}
+  Gouy factor = ${cfg.modelSpec.gouyFactor}`;
+      $("summaryBox").textContent = txt;
+    }
+
+    function updateBadges(cfg) {
+      const b0 = beamAt(0, cfg);
+      const edge0 = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b0.wUm, 2));
+      const clipBadge = $("clipBadge");
+      const edgeBadge = $("edgeBadge");
+      const label = edge0 < 0.01 ? ["Low clipping risk at injection", "good"] : edge0 < 0.05 ? ["Moderate clipping risk", "warn"] : ["Strong clipping at injection", "bad"];
+      clipBadge.className = `badge ${label[1]}`;
+      clipBadge.textContent = label[0];
+
+      const bq = beamAt(cfg.queryXUm, cfg);
+      const edgeq = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / bq.wUm, 2));
+      const label2 = edgeq < 0.01 ? ["Box edge intensity < 1%", "good"] : edgeq < 0.05 ? ["Box edge intensity < 5%", "warn"] : ["Box edge intensity is high", "bad"];
+      edgeBadge.className = `badge ${label2[1]}`;
+      edgeBadge.textContent = label2[0];
+    }
+
+    function svgEl(tag, attrs = {}, text = "") {
+      const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      if (text) el.textContent = text;
+      return el;
+    }
+
+    function renderEnvelope(cfg) {
+      const host = $("envelopePlot");
+      const W = host.clientWidth || 800;
+      const H = host.clientHeight || 420;
+      const m = { l: 92, r: 30, t: 20, b: 64 };
+      const iw = W - m.l - m.r;
+      const ih = H - m.t - m.b;
+      const view = envelopeView || defaultEnvelopeView(cfg);
+      const scaleX = scaledUnitFromUm(Math.max(Math.abs(view.xMin), Math.abs(view.xMax), cfg.xMaxUm));
+      const xMin = view.xMin, xMax = view.xMax, yMin = view.yMin, yMax = view.yMax;
+      const cGrid = 'rgba(160,184,215,0.16)';
+      const cAxis = '#d7e6fb';
+      const cLabel = '#eef4ff';
+      const X = x => m.l + iw * ((x - xMin) / Math.max(1e-9, xMax - xMin));
+      const Y = y => m.t + ih * (1 - (y - yMin) / Math.max(1e-9, yMax - yMin));
+
+      const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}` });
+      svg.appendChild(svgEl('rect', { x: 0, y: 0, width: W, height: H, fill: 'transparent' }));
+
+      const xTicks = niceTicks(xMin, xMax, 7);
+      const yTicks = niceTicks(yMin, yMax, 7);
+
+      xTicks.forEach(t => {
+        const x = X(t);
+        svg.appendChild(svgEl('line', { x1: x, y1: m.t, x2: x, y2: H - m.b, stroke: cGrid, 'stroke-width': 1 }));
+        svg.appendChild(svgEl('text', { x, y: H - 18, fill: cAxis, 'font-size': 15, 'text-anchor': 'middle' }, fmt(t / scaleX.scale)));
+      });
+      yTicks.forEach(t => {
+        const y = Y(t);
+        svg.appendChild(svgEl('line', { x1: m.l, y1: y, x2: W - m.r, y2: y, stroke: cGrid, 'stroke-width': 1 }));
+        svg.appendChild(svgEl('text', { x: m.l - 12, y: y + 5, fill: cAxis, 'font-size': 15, 'text-anchor': 'end' }, fmt(t)));
+      });
+
+      svg.appendChild(svgEl('text', { x: m.l + iw / 2, y: H - 2, fill: cLabel, 'font-size': 17, 'font-weight': '700', 'text-anchor': 'middle' }, `Propagation distance x (${scaleX.unit})`));
+      svg.appendChild(svgEl('text', { x: 22, y: m.t + ih / 2, fill: cLabel, 'font-size': 17, 'font-weight': '700', transform: `rotate(-90 22 ${m.t + ih / 2})`, 'text-anchor': 'middle' }, 'Transverse coordinate y (µm)'));
+
+      [cfg.yHalfWidthUm, -cfg.yHalfWidthUm].forEach(v => {
+        if (v >= yMin && v <= yMax) {
+          svg.appendChild(svgEl('line', {
+            x1: m.l, y1: Y(v), x2: W - m.r, y2: Y(v),
+            stroke: '#d56f6f', 'stroke-width': 1.6, 'stroke-dasharray': '7 6', opacity: 0.9
+          }));
+        }
+      });
+
+      const n = 700;
+      const xs = [];
+      for (let i = 0; i <= n; i++) {
+        const x = xMin + (xMax - xMin) * i / n;
+        const w = beamAt(x, cfg).wUm;
+        xs.push([x, w]);
+      }
+      const top = xs.map(([x, w], i) => `${i ? 'L' : 'M'} ${X(x)} ${Y(w)}`).join(' ');
+      const bot = xs.map(([x, w], i) => `${i ? 'L' : 'M'} ${X(x)} ${Y(-w)}`).join(' ');
+      const fillPath = `${top} ${xs.slice().reverse().map(([x, w]) => `L ${X(x)} ${Y(-w)}`).join(' ')} Z`;
+      svg.appendChild(svgEl('path', { d: fillPath, fill: 'rgba(93, 155, 255, 0.12)' }));
+      svg.appendChild(svgEl('path', { d: top, fill: 'none', stroke: '#4c8fe8', 'stroke-width': 2.6 }));
+      svg.appendChild(svgEl('path', { d: bot, fill: 'none', stroke: '#4c8fe8', 'stroke-width': 2.6 }));
+
+      [0, cfg.xMaxUm].forEach(v => {
+        if (v >= xMin && v <= xMax) {
+          svg.appendChild(svgEl('line', {
+            x1: X(v), y1: m.t, x2: X(v), y2: H - m.b,
+            stroke: 'rgba(185, 205, 230, 0.35)', 'stroke-width': 1, 'stroke-dasharray': '4 5'
+          }));
+        }
+      });
+
+      if (cfg.focusDistUm >= xMin && cfg.focusDistUm <= xMax) {
+        const waistX = X(cfg.focusDistUm);
+        svg.appendChild(svgEl('line', { x1: waistX, y1: m.t, x2: waistX, y2: H - m.b, stroke: '#2dbf9f', 'stroke-width': 2.1, 'stroke-dasharray': '7 6' }));
+      }
+
+      const selX = X(cfg.queryXUm);
+      const selW = beamAt(cfg.queryXUm, cfg).wUm;
+      svg.appendChild(svgEl('line', { x1: selX, y1: m.t, x2: selX, y2: H - m.b, stroke: '#c59b2d', 'stroke-width': 2.5 }));
+      if (selW >= yMin && selW <= yMax) svg.appendChild(svgEl('circle', { cx: selX, cy: Y(selW), r: 5.3, fill: '#c59b2d' }));
+      if (-selW >= yMin && -selW <= yMax) svg.appendChild(svgEl('circle', { cx: selX, cy: Y(-selW), r: 5.3, fill: '#c59b2d' }));
+
+      host.innerHTML = '';
+      host.appendChild(svg);
+      $("viewReadout").textContent = `View: x = ${fmt(xMin / scaleX.scale)} to ${fmt(xMax / scaleX.scale)} ${scaleX.unit}, y = ${fmt(yMin)} to ${fmt(yMax)} µm`;
+
+      const getPlotCoords = evt => {
+        const rect = host.getBoundingClientRect();
+        return {
+          px: clamp(evt.clientX - rect.left, m.l, W - m.r),
+          py: clamp(evt.clientY - rect.top, m.t, H - m.b)
+        };
+      };
+      const xFromPx = px => xMin + (px - m.l) / iw * (xMax - xMin);
+      const yFromPy = py => yMin + (1 - (py - m.t) / ih) * (yMax - yMin);
+
+      let dragMode = null;
+      let start = null;
+
+      host.onpointerdown = e => {
+        const { px, py } = getPlotCoords(e);
+        const nearSlice = Math.abs(px - selX) < 12;
+        dragMode = nearSlice ? 'slice' : 'pan';
+        start = { px, py, view: { ...envelopeView } };
+        host.setPointerCapture(e.pointerId);
+      };
+
+      host.onpointermove = e => {
+        if (!dragMode || !start) return;
+        const { px, py } = getPlotCoords(e);
+        if (dragMode === 'slice') {
+          const xUm = clamp(xFromPx(px), 0, cfg.xMaxUm);
+          $("queryXUm").value = fmt(xUm, 4);
+          syncSliderToX(xUm, cfg);
+          render();
+        } else if (dragMode === 'pan') {
+          const dxData = (px - start.px) / iw * (start.view.xMax - start.view.xMin);
+          const dyData = (py - start.py) / ih * (start.view.yMax - start.view.yMin);
+          envelopeView = {
+            xMin: start.view.xMin - dxData,
+            xMax: start.view.xMax - dxData,
+            yMin: start.view.yMin + dyData,
+            yMax: start.view.yMax + dyData,
+          };
+          render();
+        }
+      };
+
+      host.onpointerup = e => {
+        dragMode = null;
+        start = null;
+        if (host.hasPointerCapture(e.pointerId)) host.releasePointerCapture(e.pointerId);
+      };
+      host.onpointerleave = () => { dragMode = null; start = null; };
+
+      host.onwheel = e => {
+        e.preventDefault();
+        const { px, py } = getPlotCoords(e);
+        const xData = xFromPx(px);
+        const yData = yFromPy(py);
+        const zoom = Math.exp((e.deltaY > 0 ? 1 : -1) * 0.14);
+        const minXSpan = Math.max(cfg.xMaxUm * 0.002, 0.5);
+        const minYSpan = Math.max(0.2, cfg.yHalfWidthUm * 0.01);
+        const maxXSpan = Math.max(cfg.xMaxUm * 40, cfg.focusDistUm * 60, 1e5);
+        const maxYSpan = Math.max(cfg.yHalfWidthUm * 60, beamAt(0, cfg).wUm * 80, 2e4);
+
+        let newXMin = xData - (xData - xMin) * zoom;
+        let newXMax = xData + (xMax - xData) * zoom;
+        let newYMin = yData - (yData - yMin) * zoom;
+        let newYMax = yData + (yMax - yData) * zoom;
+
+        if (newXMax - newXMin < minXSpan) {
+          const mid = 0.5 * (newXMin + newXMax);
+          newXMin = mid - minXSpan / 2;
+          newXMax = mid + minXSpan / 2;
+        }
+        if (newYMax - newYMin < minYSpan) {
+          const mid = 0.5 * (newYMin + newYMax);
+          newYMin = mid - minYSpan / 2;
+          newYMax = mid + minYSpan / 2;
+        }
+        if (newXMax - newXMin > maxXSpan) {
+          const mid = 0.5 * (newXMin + newXMax);
+          newXMin = mid - maxXSpan / 2;
+          newXMax = mid + maxXSpan / 2;
+        }
+        if (newYMax - newYMin > maxYSpan) {
+          const mid = 0.5 * (newYMin + newYMax);
+          newYMin = mid - maxYSpan / 2;
+          newYMax = mid + maxYSpan / 2;
+        }
+
+        envelopeView = { xMin: newXMin, xMax: newXMax, yMin: newYMin, yMax: newYMax };
+        render();
+      };
+
+      host.ondblclick = () => {
+        $("queryXUm").value = fmt(cfg.focusDistUm, 4);
+        resetEnvelopeView(cfg);
+        render();
+      };
+    }
+
+    function renderProfile(cfg) {
+      const host = $("profilePlot");
+      const W = host.clientWidth || 560;
+      const H = host.clientHeight || 360;
+      const m = { l: 84, r: 24, t: 18, b: 58 };
+      const iw = W - m.l - m.r;
+      const ih = H - m.t - m.b;
+      const b = beamAt(cfg.queryXUm, cfg);
+      const yPlotMax = Math.max(cfg.yHalfWidthUm * 1.15, b.wUm * 2.2);
+      const X = y => m.l + iw * ((y + yPlotMax) / (2 * yPlotMax));
+      const Y = i => m.t + ih * (1 - i);
+      const yTicks = niceTicks(-yPlotMax, yPlotMax, 7);
+      const iTicks = [0, 0.25, 0.5, 0.75, 1];
+
+      const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}` });
+      svg.appendChild(svgEl('rect', { x: 0, y: 0, width: W, height: H, fill: 'transparent' }));
+
+      yTicks.forEach(t => {
+        const x = X(t);
+        svg.appendChild(svgEl('line', { x1: x, y1: m.t, x2: x, y2: H - m.b, stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1 }));
+        svg.appendChild(svgEl('text', { x, y: H - 18, fill: '#dbe9ff', 'font-size': 14, 'text-anchor': 'middle' }, fmt(t)));
+      });
+      iTicks.forEach(t => {
+        const y = Y(t);
+        svg.appendChild(svgEl('line', { x1: m.l, y1: y, x2: W - m.r, y2: y, stroke: 'rgba(255,255,255,0.08)', 'stroke-width': 1 }));
+        svg.appendChild(svgEl('text', { x: m.l - 10, y: y + 5, fill: '#dbe9ff', 'font-size': 14, 'text-anchor': 'end' }, fmt(t, 2)));
+      });
+
+      svg.appendChild(svgEl('text', { x: m.l + iw / 2, y: H - 2, fill: '#eff6ff', 'font-size': 16, 'font-weight': '700', 'text-anchor': 'middle' }, 'Transverse coordinate y (µm)'));
+      svg.appendChild(svgEl('text', { x: 20, y: m.t + ih / 2, fill: '#eff6ff', 'font-size': 16, 'font-weight': '700', transform: `rotate(-90 20 ${m.t + ih / 2})`, 'text-anchor': 'middle' }, 'Normalized intensity'));
+
+      [cfg.yHalfWidthUm, -cfg.yHalfWidthUm].forEach(v => {
+        svg.appendChild(svgEl('line', { x1: X(v), y1: m.t, x2: X(v), y2: H - m.b, stroke: '#ff8e8e', 'stroke-width': 1.8, 'stroke-dasharray': '6 5' }));
+      });
+
+      const pts = [];
+      for (let i = 0; i <= 420; i++) {
+        const y = -yPlotMax + 2 * yPlotMax * i / 420;
+        const inten = Math.exp(-2 * Math.pow(y / b.wUm, 2));
+        pts.push(`${i ? 'L' : 'M'} ${X(y)} ${Y(inten)}`);
+      }
+      svg.appendChild(svgEl('path', { d: pts.join(' '), fill: 'none', stroke: '#77c2ff', 'stroke-width': 2.6 }));
+
+      const yHalfFwhm = Math.sqrt(Math.log(2) / 2) * b.wUm;
+      [-yHalfFwhm, yHalfFwhm].forEach(y => {
+        svg.appendChild(svgEl('circle', { cx: X(y), cy: Y(0.5), r: 5, fill: '#f8d36e' }));
+      });
+      svg.appendChild(svgEl('line', { x1: X(-yHalfFwhm), y1: Y(0.5), x2: X(yHalfFwhm), y2: Y(0.5), stroke: '#f8d36e', 'stroke-width': 2, 'stroke-dasharray': '5 4' }));
+
+      host.innerHTML = '';
+      host.appendChild(svg);
+    }
+
+    function syncSliderToX(xUm, cfg) {
+      const slider = $("sliceSlider");
+      slider.value = Math.round(clamp(xUm, 0, cfg.xMaxUm) / cfg.xMaxUm * 1000);
+      $("sliderReadout").textContent = `x = ${fmt(xUm)} µm`;
+    }
+
+    function updateSliderLabels(cfg) {
+      const su = scaledUnitFromUm(cfg.xMaxUm);
+      $("tickLeft").textContent = `0 ${su.unit}`;
+      $("tickMid").textContent = `${fmt(cfg.focusDistUm / su.scale)} ${su.unit} (waist)`;
+      $("tickRight").textContent = `${fmt(cfg.xMaxUm / su.scale)} ${su.unit}`;
+    }
+
+    function render() {
+      const cfg = currentConfig();
+      buildMetrics(cfg);
+      buildFormulas(cfg);
+      buildClipTable(cfg);
+      buildTimeTable(cfg);
+      buildSummary(cfg);
+      updateBadges(cfg);
+      updateSliderLabels(cfg);
+      syncSliderToX(cfg.queryXUm, cfg);
+      renderEnvelope(cfg);
+      renderProfile(cfg);
+    }
+
+    inputs.forEach(el => el.addEventListener('input', () => render()));
+    $("sliceSlider").addEventListener('input', () => {
+      const cfg = currentConfig();
+      const xUm = cfg.xMaxUm * (+$("sliceSlider").value) / 1000;
+      $("queryXUm").value = fmt(xUm, 4);
+      render();
+    });
+
+    $("resetBtn").addEventListener('click', () => {
+      for (const [k, v] of Object.entries(defaults)) $(k).value = v;
+      lastFocusDistUm = defaults.focusDistUm;
+      envelopeView = null;
+      render();
+    });
+
+    $("fitViewBtn").addEventListener('click', () => {
+      const cfg = currentConfig();
+      $("queryXUm").value = fmt(cfg.focusDistUm, 4);
+      resetEnvelopeView(cfg);
+      render();
+    });
+
+    $("copyBtn").addEventListener('click', async () => {
+      const text = $("summaryBox").textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        $("copyBtn").textContent = 'Copied';
+        setTimeout(() => $("copyBtn").textContent = 'Copy summary', 1200);
+      } catch {
+        alert('Copy failed. You can still select the text manually.');
+      }
+    });
+
+    window.addEventListener('resize', render);
+    render();
+  </script>
+</body>
+</html>
