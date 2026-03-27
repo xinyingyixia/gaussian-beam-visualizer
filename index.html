@@ -134,9 +134,7 @@
       align-items: start;
     }
     .controls { position: static; }
-    .controlsGrid {
-      display: block;
-    }
+    .controlsGrid { display: block; }
     .section {
       padding: 22px 24px;
       border-bottom: 1px solid var(--line);
@@ -172,15 +170,33 @@
     .field { margin: 0; }
     .field label {
       display: flex;
+      align-items: flex-end;
       justify-content: space-between;
-      gap: 10px;
+      flex-wrap: wrap;
+      row-gap: 5px;
+      column-gap: 10px;
       margin-bottom: 9px;
       color: var(--label);
-      font-size: 15px;
-      font-weight: 650;
       line-height: 1.35;
     }
-    .field small { color: var(--muted); font-size: 12px; font-weight: 500; }
+    .fieldLabelMain {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .fieldLabelUnit {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--input-border);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
     input[type="number"], select {
       width: 100%;
       padding: 13px 14px;
@@ -198,13 +214,8 @@
       justify-content: flex-end;
       align-self: flex-start;
     }
-    .formulaSection .panel-body {
-      padding-top: 22px;
-    }
-    .formulaSection .sectionSub {
-      max-width: none;
-      margin-bottom: 14px;
-    }
+    .formulaSection .panel-body { padding-top: 22px; }
+    .formulaSection .sectionSub { max-width: none; margin-bottom: 14px; }
     button {
       border: none;
       border-radius: 12px;
@@ -283,6 +294,7 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
     .plotToolBtn {
       padding: 8px 11px;
@@ -292,6 +304,56 @@
       border: 1px solid var(--input-border);
       color: var(--text);
       box-shadow: none;
+    }
+    .plotMiniField {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid var(--input-border);
+      min-width: 170px;
+    }
+    .plotMiniField span {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .plotMiniField input {
+      min-width: 0;
+      flex: 1 1 auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+    .plotMiniField input:focus { outline: none; }
+    .toggleGroup {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--input-border);
+    }
+    .toggleBtn {
+      padding: 8px 12px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow: none;
+    }
+    .toggleBtn.active {
+      background: linear-gradient(135deg, #ffb54a, #f37726);
+      color: #2d1600;
+      box-shadow: 0 6px 14px rgba(243,119,38,0.28);
     }
     .viewReadout {
       color: var(--muted);
@@ -364,25 +426,27 @@
     mjx-container[jax="CHTML"][display="true"] { overflow-x: visible; overflow-y: visible; max-width: 100%; }
     .legend {
       display: flex;
-      gap: 14px;
+      gap: 16px 18px;
       flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 650;
+      color: var(--label);
+      margin-top: 12px;
     }
     .interactionHint {
       color: var(--muted);
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.5;
       margin-top: 10px;
     }
     .legend i {
       display: inline-block;
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       border-radius: 999px;
-      margin-right: 6px;
-      vertical-align: -1px;
+      margin-right: 8px;
+      vertical-align: -2px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.1) inset;
     }
     .badge {
       display: inline-block;
@@ -414,22 +478,60 @@
       gap: 14px 14px;
       align-items: stretch;
     }
-    #formulaBox .formulaLine,
-    #summaryBox .formulaLine {
+    #formulaBox .formulaLine {
       margin: 0;
-      padding: 16px 16px;
+      padding: 14px 16px;
       border-radius: 16px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.07);
       min-height: 88px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+    .formulaTitle {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     #summaryBox {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px 16px;
       align-items: stretch;
+    }
+    .summaryCard {
+      margin: 0;
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+    .summaryCard .summaryLabel {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .summaryCard .summaryValue {
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .summaryCard .summarySub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
     :root[data-theme="light"] .card { backdrop-filter: none; }
     @media (max-width: 1260px) {
@@ -456,6 +558,8 @@
       .panel-body { padding: 18px; }
       .field label { font-size: 14px; }
       input[type="number"], select { font-size: 15px; }
+      .plotTools { justify-content: flex-start; }
+      .plotMiniField { width: 100%; }
     }
   </style>
   <script>
@@ -486,14 +590,14 @@
         <div class="heroHead">
           <div>
             <h1>Gaussian Beam Visualizer</h1>
-            <p>Beam-geometry checks for wavelength, waist FWHM diameter, waist location, box half-width, and pulse duration.</p>
+            <p>Beam geometry, clipping, and pulse-width checks.</p>
           </div>
           <button id="themeToggle" class="themeToggle" type="button">Light mode</button>
         </div>
         <div class="pillbar">
-          <div class="pill">Strict 2D slab</div>
-          <div class="pill">2D practical projection</div>
-          <div class="pill">Standard 3D circular beam</div>
+          <div class="pill">2D slab</div>
+          <div class="pill">2D projected</div>
+          <div class="pill">3D circular</div>
         </div>
       </div>
     </div>
@@ -505,7 +609,7 @@
             <div class="sectionHead">
               <div>
                 <h2>Inputs</h2>
-                <p class="sectionSub">Core beam, box, and slice parameters are arranged across the full width so the controls stay dense, readable, and close to the plots.</p>
+                <p class="sectionSub">Beam, box, pulse.</p>
               </div>
               <div class="buttons topActions">
                 <button id="resetBtn" class="resetSoft">Reset</button>
@@ -514,36 +618,32 @@
             </div>
             <div class="inputsGrid">
               <div class="field">
-                <label for="model">Model <small>Choose the geometry convention</small></label>
+                <label for="model"><span class="fieldLabelMain">Model</span></label>
                 <select id="model">
-                  <option value="practical">2D practical projection</option>
-                  <option value="2d">Strict 2D slab</option>
-                  <option value="3d">Standard 3D circular</option>
+                  <option value="practical">2D projected</option>
+                  <option value="2d">2D slab</option>
+                  <option value="3d">3D circular</option>
                 </select>
               </div>
               <div class="field">
-                <label for="lambdaNm">Wavelength λ (nm)</label>
+                <label for="lambdaNm"><span class="fieldLabelMain">Wavelength λ</span><span class="fieldLabelUnit">nm</span></label>
                 <input id="lambdaNm" type="number" step="1" value="800" />
               </div>
               <div class="field">
-                <label for="dFwhmUm">Waist intensity FWHM diameter d<sub>FWHM</sub> (µm)</label>
+                <label for="dFwhmUm"><span class="fieldLabelMain">Waist FWHM diameter d<sub>FWHM</sub></span><span class="fieldLabelUnit">µm</span></label>
                 <input id="dFwhmUm" type="number" step="0.01" value="5.4" />
               </div>
               <div class="field">
-                <label for="focusDistUm">Injection plane to waist distance (µm)</label>
+                <label for="focusDistUm"><span class="fieldLabelMain">Waist distance</span><span class="fieldLabelUnit">µm</span></label>
                 <input id="focusDistUm" type="number" step="0.1" value="1020" />
               </div>
               <div class="field">
-                <label for="yHalfWidthUm">Box half-width |y|<sub>max</sub> (µm)</label>
+                <label for="yHalfWidthUm"><span class="fieldLabelMain">Box half-width |y|<sub>max</sub></span><span class="fieldLabelUnit">µm</span></label>
                 <input id="yHalfWidthUm" type="number" step="0.1" value="40" />
               </div>
               <div class="field">
-                <label for="pulseFwhmFs">Pulse intensity FWHM (fs) <small>Temporal conversion only</small></label>
+                <label for="pulseFwhmFs"><span class="fieldLabelMain">Pulse FWHM</span><span class="fieldLabelUnit">fs</span></label>
                 <input id="pulseFwhmFs" type="number" step="0.1" value="28" />
-              </div>
-              <div class="field">
-                <label for="queryXUm">Slice position x from injection plane (µm)</label>
-                <input id="queryXUm" type="number" step="0.1" value="1020" />
               </div>
             </div>
           </div>
@@ -557,25 +657,30 @@
               <div class="plotTitle">
                 <div>
                   <h2>Propagation envelope</h2>
-                  <div class="sub">Injection plane to the waist, plus the same distance beyond it.</div>
+                  <div class="sub">Centered on the waist.</div>
                 </div>
                 <div class="plotTools">
                   <div class="badge" id="clipBadge"></div>
+                  <div class="plotMiniField">
+                    <span>Slice x</span>
+                    <input id="queryXUm" type="text" inputmode="decimal" value="1020" spellcheck="false" />
+                    <span>µm</span>
+                  </div>
                   <button class="plotToolBtn" id="fitViewBtn" type="button">Fit view</button>
                 </div>
               </div>
               <div class="plot" id="envelopePlot"></div>
-              <div class="interactionHint">Wheel to zoom. Drag the gold slice line to move the slice. Drag elsewhere to pan.</div>
+              <div class="interactionHint">Wheel: zoom · Drag slice: move · Drag plot: pan</div>
               <div class="interactionHint" id="viewReadout"></div>
               <div class="legend">
-                <span><i style="background:#77c2ff"></i> ± w(x)</span>
+                <span><i style="background:#77c2ff"></i> ±w(x)</span>
                 <span><i style="background:#8ff7d8"></i> waist plane</span>
-                <span><i style="background:#f8d36e"></i> selected slice</span>
-                <span><i style="background:#ff8e8e"></i> box half-width</span>
+                <span><i style="background:#f8d36e"></i> slice</span>
+                <span><i style="background:#ff8e8e"></i> box limit</span>
               </div>
               <div class="sliderWrap">
                 <div class="sliderHead">
-                  <span>Move the slice selector</span>
+                  <span>Slice position</span>
                   <strong id="sliderReadout"></strong>
                 </div>
                 <input id="sliceSlider" type="range" min="0" max="1000" step="1" value="0" />
@@ -592,26 +697,24 @@
             <div class="panel-body">
               <div class="plotTitle">
                 <div>
-                  <h2>Transverse intensity profile</h2>
-                  <div class="sub">Normalized intensity at the selected longitudinal position.</div>
+                  <h2>Transverse profile</h2>
+                  <div class="sub" id="profileSub">Intensity at selected x.</div>
                 </div>
-                <div class="badge" id="edgeBadge"></div>
+                <div class="plotTools">
+                  <div class="toggleGroup" role="tablist" aria-label="Profile mode">
+                    <button class="toggleBtn active" id="modeIntensityBtn" type="button" data-profile-mode="intensity">Intensity</button>
+                    <button class="toggleBtn" id="modeFieldBtn" type="button" data-profile-mode="field">Field</button>
+                  </div>
+                  <div class="badge" id="edgeBadge"></div>
+                </div>
               </div>
               <div class="plot small" id="profilePlot"></div>
-              <div class="legend">
+              <div class="legend" id="profileLegend">
                 <span><i style="background:#77c2ff"></i> normalized intensity</span>
                 <span><i style="background:#f8d36e"></i> FWHM points</span>
                 <span><i style="background:#ff8e8e"></i> box boundaries</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="card formulaSection">
-          <div class="panel-body">
-            <h2>Quick formulas</h2>
-            <p class="sectionSub">Core beam relations are shown in a wider formula grid so each expression stays fully visible without horizontal scrolling.</p>
-            <div class="formula" id="formulaBox"></div>
           </div>
         </div>
 
@@ -622,7 +725,7 @@
         <div class="card">
           <div class="panel-body">
             <h2>Calculation summary</h2>
-            <p class="sectionSub">Key derived quantities are arranged as a responsive formula grid so the panel uses wide screens more effectively.</p>
+            <p class="sectionSub">Key values at the injection plane and selected slice.</p>
             <div class="formula" id="summaryBox"></div>
           </div>
         </div>
@@ -641,13 +744,21 @@
             </div>
           </div>
         </div>
+
+
+        <div class="card formulaSection">
+          <div class="panel-body">
+            <h2>Quick formulas</h2>
+            <div class="formula" id="formulaBox"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
     const $ = id => document.getElementById(id);
-    const inputs = ["model", "lambdaNm", "dFwhmUm", "focusDistUm", "yHalfWidthUm", "pulseFwhmFs", "queryXUm"].map($);
+    const inputs = ["model", "lambdaNm", "dFwhmUm", "focusDistUm", "yHalfWidthUm", "pulseFwhmFs"].map($);
     const defaults = {
       model: "practical",
       lambdaNm: 800,
@@ -658,6 +769,7 @@
       queryXUm: 1020,
     };
 
+    let profileMode = "intensity";
     let envelopeView = null;
     let lastFocusDistUm = defaults.focusDistUm;
     let lastRenderedCfg = null;
@@ -681,6 +793,30 @@
     function fmtPercent(frac) {
       return (100 * frac).toFixed(frac < 0.01 ? 3 : frac < 0.1 ? 2 : 1) + "%";
     }
+    function parseLooseNumber(value) {
+      if (typeof value !== 'string') return Number.isFinite(value) ? value : NaN;
+      const normalized = value.trim().replace(/[−–—]/g, '-').replace(/,/g, '');
+      if (!normalized || normalized === '-' || normalized === '+' || normalized === '.' || normalized === '-.' || normalized === '+.') return NaN;
+      const num = Number(normalized);
+      return Number.isFinite(num) ? num : NaN;
+    }
+    function setSliceInputValue(value, force = false) {
+      const el = $("queryXUm");
+      if (!el) return;
+      if (!force && document.activeElement === el) return;
+      el.value = fmt(value, 4);
+    }
+    function commitSliceInput() {
+      const el = $("queryXUm");
+      const fallback = lastRenderedCfg ? lastRenderedCfg.queryXUm : defaults.queryXUm;
+      const parsed = parseLooseNumber(el.value);
+      if (Number.isFinite(parsed)) {
+        el.value = fmt(parsed, 4);
+        render();
+      } else {
+        el.value = fmt(fallback, 4);
+      }
+    }
     function scaledUnitFromUm(maxUm) {
       if (maxUm >= 2000) return { scale: 1000, unit: "mm" };
       return { scale: 1, unit: "µm" };
@@ -698,9 +834,42 @@
     }
 
     function getModelSpec(model) {
-      if (model === "2d") return { label: "Strict 2D slab", ampPower: 0.5, gouyFactor: 0.5 };
-      if (model === "3d") return { label: "Standard 3D circular", ampPower: 1.0, gouyFactor: 1.0 };
-      return { label: "2D practical projection", ampPower: 0.5, gouyFactor: 1.0 };
+      if (model === "2d") return { label: "2D slab", ampPower: 0.5, gouyFactor: 0.5 };
+      if (model === "3d") return { label: "3D circular", ampPower: 1.0, gouyFactor: 1.0 };
+      return { label: "2D projected", ampPower: 0.5, gouyFactor: 1.0 };
+    }
+
+    function getProfileSpec(mode = profileMode) {
+      if (mode === "field") {
+        return {
+          key: "field",
+          label: "Field",
+          legendLabel: "normalized field",
+          symbol: "E",
+          axisLabel: "Normalized field",
+          formula: String.raw`E(y;x)/E_0(x)=\exp\!\left[-\left(\dfrac{y}{w(x)}\right)^2\right]`,
+          halfLevel: 0.5,
+          halfWidth: w => Math.sqrt(Math.log(2)) * w,
+          widthLabel: String.raw`d_{\mathrm{FWHM},E}(x)=2\sqrt{\ln 2}\,w(x)`,
+          widthValue: w => 2 * Math.sqrt(Math.log(2)) * w,
+          valueAtEdge: (y, w) => Math.exp(-Math.pow(y / w, 2)),
+          e2Points: w => ({ y: [-w, w], value: Math.exp(-1) }),
+        };
+      }
+      return {
+        key: "intensity",
+        label: "Intensity",
+        legendLabel: "normalized intensity",
+        symbol: "I",
+        axisLabel: "Normalized intensity",
+        formula: String.raw`I(y;x)/I_0(x)=\exp\!\left[-2\left(\dfrac{y}{w(x)}\right)^2\right]`,
+        halfLevel: 0.5,
+        halfWidth: w => Math.sqrt(Math.log(2) / 2) * w,
+        widthLabel: String.raw`d_{\mathrm{FWHM},I}(x)=\sqrt{2\ln 2}\,w(x)`,
+        widthValue: w => Math.sqrt(2 * Math.log(2)) * w,
+        valueAtEdge: (y, w) => Math.exp(-2 * Math.pow(y / w, 2)),
+        e2Points: w => ({ y: [-w, w], value: Math.exp(-2) }),
+      };
     }
 
     function beamAt(xFromInjectionUm, cfg) {
@@ -728,11 +897,12 @@
 
     function profileHalfRange(cfg, beamState) {
       const b = beamState || beamAt(cfg.queryXUm, cfg);
-      const fwhmHalf = Math.sqrt(Math.log(2) / 2) * b.wUm;
+      const profileSpec = getProfileSpec();
+      const halfWidth = profileSpec.halfWidth(b.wUm);
       const envelopeHalf = envelopeView
         ? Math.max(Math.abs(envelopeView.yMin), Math.abs(envelopeView.yMax))
         : 0;
-      const fitHalf = Math.max(b.wUm * 2.75, cfg.yHalfWidthUm * 1.18, fwhmHalf * 1.8, 1e-6);
+      const fitHalf = Math.max(b.wUm * 2.75, cfg.yHalfWidthUm * 1.18, halfWidth * 1.8, 1e-6);
       if (!envelopeHalf) return fitHalf;
       return Math.max(fitHalf, envelopeHalf);
     }
@@ -748,9 +918,8 @@
       const focusDistUm = Math.max(1e-6, +$("focusDistUm").value || defaults.focusDistUm);
       const yHalfWidthUm = Math.max(1e-6, +$("yHalfWidthUm").value || defaults.yHalfWidthUm);
       const pulseFwhmFs = Math.max(1e-6, +$("pulseFwhmFs").value || defaults.pulseFwhmFs);
-      let queryXUm = +$("queryXUm").value;
-      if (!isFinite(queryXUm)) queryXUm = focusDistUm;
-      $("queryXUm").value = fmt(queryXUm, 4);
+      const queryXParsed = parseLooseNumber($("queryXUm").value);
+      const queryXUm = Number.isFinite(queryXParsed) ? queryXParsed : focusDistUm;
 
       const lambdaUm = lambdaNm * 1e-3;
       const w0Um = dFwhmUm / Math.sqrt(2 * Math.log(2));
@@ -769,16 +938,17 @@
 
     function buildMetrics(cfg) {
       const b = beamAt(cfg.queryXUm, cfg);
-      const dFwhmHere = Math.sqrt(2 * Math.log(2)) * b.wUm;
-      const edgeIntensity = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b.wUm, 2));
+      const profileSpec = getProfileSpec();
+      const profileFwhm = profileSpec.widthValue(b.wUm);
+      const edgeValue = profileSpec.valueAtEdge(cfg.yHalfWidthUm, b.wUm);
       const metrics = [
-        [String.raw`Waist radius \(w_0\)`, `${fmt(cfg.w0Um)} µm`, `From the input waist intensity FWHM diameter ${fmt(cfg.dFwhmUm)} µm.`],
+        [String.raw`Waist radius \(w_0\)`, `${fmt(cfg.w0Um)} µm`, `From dFWHM = ${fmt(cfg.dFwhmUm)} µm.`],
         [String.raw`Rayleigh length \(x_R\)`, `${fmt(cfg.xRUm)} µm`, `${fmt(cfg.xRUm / 1000)} mm`],
-        [String.raw`Beam radius \(w(x)\)`, `${fmt(b.wUm)} µm`, `At the selected slice x = ${fmt(cfg.queryXUm)} µm.`],
-        [String.raw`Intensity FWHM diameter`, `${fmt(dFwhmHere)} µm`, String.raw`Computed from \(d_{\mathrm{FWHM}}(x)=\sqrt{2\ln 2}\,w(x)\).`],
-        [String.raw`Curvature radius \(R(x)\)`, `${isFinite(b.RUm) ? fmt(b.RUm) + ' µm' : '∞'}`, `Sign follows the distance from the waist.`],
+        [String.raw`Beam radius \(w(x)\)`, `${fmt(b.wUm)} µm`, `At x = ${fmt(cfg.queryXUm)} µm.`],
+        [String.raw`${profileSpec.label} FWHM`, `${fmt(profileFwhm)} µm`, profileSpec.key === "intensity" ? `Current intensity width.` : `Current field width.`],
+        [String.raw`Curvature radius \(R(x)\)`, `${isFinite(b.RUm) ? fmt(b.RUm) + ' µm' : '∞'}`, `At the selected slice.`],
         [String.raw`Gouy phase`, `${fmt(b.gouyRad)} rad`, `${fmt(b.gouyRad * 180 / Math.PI)}°`],
-        [String.raw`Edge intensity at \(|y|_{\max}\)`, `${fmtPercent(edgeIntensity)}`, `Normalized intensity at y = ±${fmt(cfg.yHalfWidthUm)} µm.`],
+        [String.raw`Box-edge ${profileSpec.label.toLowerCase()}`, `${fmtPercent(edgeValue)}`, `At y = ±${fmt(cfg.yHalfWidthUm)} µm.`],
         [String.raw`Amplitude factor`, `${fmt(b.ampFactor)}`, String.raw`${cfg.modelSpec.label}: \(\left(w_0/w\right)^{${cfg.modelSpec.ampPower}}\)`],
       ];
       $("metrics").innerHTML = metrics.map(([k, v, s]) => `
@@ -790,18 +960,35 @@
     }
 
     function buildFormulas(cfg) {
+      const profileSpec = getProfileSpec();
       const gouy = cfg.modelSpec.gouyFactor === 1
         ? String.raw`\psi(x)=\arctan\!\left(\frac{x-x_{\mathrm{waist}}}{x_R}\right)`
         : String.raw`\psi(x)=\frac{1}{2}\arctan\!\left(\frac{x-x_{\mathrm{waist}}}{x_R}\right)`;
       $("formulaBox").innerHTML = String.raw`
-        <div class="formulaLine">\(w_0=\dfrac{d_{\mathrm{FWHM}}}{\sqrt{2\ln 2}}\)</div>
-        <div class="formulaLine">\(x_R=\dfrac{\pi w_0^2}{\lambda}\)</div>
-        <div class="formulaLine">\(w(x)=w_0\sqrt{1+\left(\dfrac{x-x_{\mathrm{waist}}}{x_R}\right)^2}\)</div>
-        <div class="formulaLine">\(R(x)=(x-x_{\mathrm{waist}})\!\left[1+\left(\dfrac{x_R}{x-x_{\mathrm{waist}}}\right)^2\right]\)</div>
-        <div class="formulaLine">\(${gouy}\)</div>
-        <div class="formulaLine">\(A(x)\propto\left(\dfrac{w_0}{w(x)}\right)^{${cfg.modelSpec.ampPower}}\)</div>
-        <div class="formulaLine">\(I(y;x)\propto\exp\!\left[-2\left(\dfrac{y}{w(x)}\right)^2\right]\)</div>
-        <div class="formulaLine">\(d_{\mathrm{FWHM}}(x)=\sqrt{2\ln 2}\,w(x)\)</div>`;
+        <div class="formulaLine">
+          <div class="formulaTitle">Waist from input FWHM</div>
+          <div>\(w_0=\dfrac{d_{\mathrm{FWHM}}}{\sqrt{2\ln 2}}\)</div>
+        </div>
+        <div class="formulaLine">
+          <div class="formulaTitle">Rayleigh length</div>
+          <div>\(x_R=\dfrac{\pi w_0^2}{\lambda}\)</div>
+        </div>
+        <div class="formulaLine">
+          <div class="formulaTitle">Envelope</div>
+          <div>\(w(x)=w_0\sqrt{1+\left(\dfrac{x-x_{\mathrm{waist}}}{x_R}\right)^2}\)</div>
+        </div>
+        <div class="formulaLine">
+          <div class="formulaTitle">Phase</div>
+          <div>\(${gouy}\)</div>
+        </div>
+        <div class="formulaLine">
+          <div class="formulaTitle">Profile (${profileSpec.label})</div>
+          <div>\(${profileSpec.formula}\)</div>
+        </div>
+        <div class="formulaLine">
+          <div class="formulaTitle">Current FWHM rule</div>
+          <div>\(${profileSpec.widthLabel}\)</div>
+        </div>`;
     }
 
     function buildClipTable(cfg) {
@@ -830,50 +1017,70 @@
         <tbody>
           <tr><td>\(\tau_{\mathrm{FWHM},I}\)</td><td>\(${fmt(cfg.pulseFwhmFs)}\,\mathrm{fs}\)</td></tr>
           <tr><td>\(\sigma_I = \frac{\tau_{\mathrm{FWHM},I}}{2\sqrt{\ln 2}}\)</td><td>\(${fmt(sigmaI)}\,\mathrm{fs}\)</td></tr>
-          <tr><td>\(\text{width} = \sqrt{2}\,\sigma_I\) in \(\mathrm{gauss}(t,t_0,\text{width})\)</td><td>\(${fmt(gaussArgWidth)}\,\mathrm{fs}\)</td></tr>
+          <tr><td>\(\text{width} = \sqrt{2}\,\sigma_I\)</td><td>\(${fmt(gaussArgWidth)}\,\mathrm{fs}\)</td></tr>
         </tbody>`;
     }
 
     function buildSummary(cfg) {
+      const profileSpec = getProfileSpec();
       const b0 = beamAt(0, cfg);
       const bq = beamAt(cfg.queryXUm, cfg);
-      const edge0 = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b0.wUm, 2));
-      const edgeq = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / bq.wUm, 2));
-      const Rslice = isFinite(bq.RUm) ? `${fmt(bq.RUm)}\,\mathrm{\mu m}` : String.raw`\infty`;
+      const edge0 = profileSpec.valueAtEdge(cfg.yHalfWidthUm, b0.wUm);
+      const edgeq = profileSpec.valueAtEdge(cfg.yHalfWidthUm, bq.wUm);
+      const profileFwhm0 = profileSpec.widthValue(b0.wUm);
+      const profileFwhmQ = profileSpec.widthValue(bq.wUm);
       const cards = [
-        String.raw`\(\lambda=${fmt(cfg.lambdaNm)}\,\mathrm{nm}\)`,
-        String.raw`\(d_{\mathrm{FWHM}}=${fmt(cfg.dFwhmUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(w_0=${fmt(cfg.w0Um)}\,\mathrm{\mu m}\)`,
-        String.raw`\(x_R=${fmt(cfg.xRUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(x_{\mathrm{waist}}=${fmt(cfg.focusDistUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(x_{\mathrm{slice}}=${fmt(cfg.queryXUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(w(0)=${fmt(b0.wUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(d_{\mathrm{FWHM}}(0)=${fmt(Math.sqrt(2 * Math.log(2)) * b0.wUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(\psi(0)=${fmt(b0.gouyRad)}\,\mathrm{rad}\)`,
-        String.raw`\(w(x_{\mathrm{slice}})=${fmt(bq.wUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(d_{\mathrm{FWHM}}(x_{\mathrm{slice}})=${fmt(Math.sqrt(2 * Math.log(2)) * bq.wUm)}\,\mathrm{\mu m}\)`,
-        String.raw`\(R(x_{\mathrm{slice}})=${Rslice}\)`,
-        String.raw`\(\psi(x_{\mathrm{slice}})=${fmt(bq.gouyRad)}\,\mathrm{rad}\)`,
-        String.raw`\(I_{\mathrm{edge}}(0)/I_0=${edge0.toPrecision(4)}\)`,
-        String.raw`\(I_{\mathrm{edge}}(x_{\mathrm{slice}})/I_0=${edgeq.toPrecision(4)}\)`
+        { label: "Model", value: cfg.modelSpec.label, sub: String.raw`\(\lambda=${fmt(cfg.lambdaNm)}\,\mathrm{nm}\)` },
+        { label: "Waist", value: `${fmt(cfg.w0Um)} µm`, sub: String.raw`\(${fmt(cfg.dFwhmUm)}\,\mathrm{\mu m}\) intensity FWHM input` },
+        { label: "Rayleigh length", value: `${fmt(cfg.xRUm)} µm`, sub: `${fmt(cfg.xRUm / 1000)} mm` },
+        { label: "Waist plane", value: `${fmt(cfg.focusDistUm)} µm`, sub: `From injection plane` },
+        { label: "Slice position", value: `${fmt(cfg.queryXUm)} µm`, sub: `Current selector position` },
+        { label: "Injection radius", value: `${fmt(b0.wUm)} µm`, sub: `${profileSpec.label} FWHM: ${fmt(profileFwhm0)} µm` },
+        { label: "Slice radius", value: `${fmt(bq.wUm)} µm`, sub: `${profileSpec.label} FWHM: ${fmt(profileFwhmQ)} µm` },
+        { label: "Slice curvature", value: isFinite(bq.RUm) ? `${fmt(bq.RUm)} µm` : `∞`, sub: `At x = ${fmt(cfg.queryXUm)} µm` },
+        { label: "Injection Gouy", value: `${fmt(b0.gouyRad)} rad`, sub: `${fmt(b0.gouyRad * 180 / Math.PI)}°` },
+        { label: "Slice Gouy", value: `${fmt(bq.gouyRad)} rad`, sub: `${fmt(bq.gouyRad * 180 / Math.PI)}°` },
+        { label: `Box-edge ${profileSpec.label.toLowerCase()} at x = 0`, value: fmtPercent(edge0), sub: `y = ±${fmt(cfg.yHalfWidthUm)} µm` },
+        { label: `Box-edge ${profileSpec.label.toLowerCase()} at slice`, value: fmtPercent(edgeq), sub: `y = ±${fmt(cfg.yHalfWidthUm)} µm` }
       ];
-      $("summaryBox").innerHTML = cards.map(v => `<div class="formulaLine">${v}</div>`).join("");
+      $("summaryBox").innerHTML = cards.map(card => `
+        <div class="summaryCard">
+          <div class="summaryLabel">${card.label}</div>
+          <div class="summaryValue">${card.value}</div>
+          <div class="summarySub">${card.sub}</div>
+        </div>`).join("");
     }
 
     function updateBadges(cfg) {
+      const profileSpec = getProfileSpec();
       const b0 = beamAt(0, cfg);
       const edge0 = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / b0.wUm, 2));
       const clipBadge = $("clipBadge");
       const edgeBadge = $("edgeBadge");
-      const label = edge0 < 0.01 ? ["Low clipping risk at injection", "good"] : edge0 < 0.05 ? ["Moderate clipping risk", "warn"] : ["Strong clipping at injection", "bad"];
+      const label = edge0 < 0.01 ? ["Low clipping risk", "good"] : edge0 < 0.05 ? ["Moderate clipping", "warn"] : ["Strong clipping", "bad"];
       clipBadge.className = `badge ${label[1]}`;
       clipBadge.textContent = label[0];
 
       const bq = beamAt(cfg.queryXUm, cfg);
-      const edgeq = Math.exp(-2 * Math.pow(cfg.yHalfWidthUm / bq.wUm, 2));
-      const label2 = edgeq < 0.01 ? ["Box edge intensity < 1%", "good"] : edgeq < 0.05 ? ["Box edge intensity < 5%", "warn"] : ["Box edge intensity is high", "bad"];
+      const edgeq = profileSpec.valueAtEdge(cfg.yHalfWidthUm, bq.wUm);
+      const label2 = edgeq < 0.01 ? [`${profileSpec.label} edge < 1%`, "good"] : edgeq < 0.05 ? [`${profileSpec.label} edge < 5%`, "warn"] : [`${profileSpec.label} edge is high`, "bad"];
       edgeBadge.className = `badge ${label2[1]}`;
       edgeBadge.textContent = label2[0];
+    }
+
+    function updateModeButtons() {
+      document.querySelectorAll('[data-profile-mode]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.profileMode === profileMode);
+      });
+    }
+
+    function updateProfileLegend() {
+      const profileSpec = getProfileSpec();
+      $("profileLegend").innerHTML = `
+        <span><i style="background:#77c2ff"></i> ${profileSpec.legendLabel}</span>
+        <span><i style="background:#f8d36e"></i> FWHM points</span>
+        <span><i style="background:#ff8e8e"></i> box boundaries</span>
+      `;
     }
 
     function svgEl(tag, attrs = {}, text = "") {
@@ -919,7 +1126,6 @@
       const cFill = cssVar('--plot-fill') || 'rgba(93,155,255,0.12)';
       const cWaist = cssVar('--waist-line') || 'rgba(185, 205, 230, 0.35)';
       const cSlice = cssVar('--slice-line') || '#c59b2d';
-      const cBox = cssVar('--box-line') || '#ff8e8e';
       const X = x => m.l + iw * ((x - xMin) / Math.max(1e-12, xMax - xMin));
       const Y = y => m.t + ih * (1 - (y - yMin) / Math.max(1e-12, yMax - yMin));
 
@@ -994,7 +1200,8 @@
       const iw = W - m.l - m.r;
       const ih = H - m.t - m.b;
       const b = beamAt(cfg.queryXUm, cfg);
-      const yHalfFwhm = Math.sqrt(Math.log(2) / 2) * b.wUm;
+      const profileSpec = getProfileSpec();
+      const yHalfFwhm = profileSpec.halfWidth(b.wUm);
       const yPlotMax = profileHalfRange(cfg, b);
       const X = y => m.l + iw * ((y + yPlotMax) / (2 * yPlotMax));
       const Y = i => m.t + ih * (1 - i);
@@ -1031,7 +1238,7 @@
 
       svg.appendChild(svgEl('line', { x1: X(0), y1: m.t, x2: X(0), y2: H - m.b, stroke: cWaist, 'stroke-width': 1.2 }));
       svg.appendChild(svgEl('text', { x: m.l + iw / 2, y: H - 2, fill: cLabel, 'font-size': 17, 'font-weight': '700', 'text-anchor': 'middle' }, 'Transverse coordinate y (µm)'));
-      svg.appendChild(svgEl('text', { x: 22, y: m.t + ih / 2, fill: cLabel, 'font-size': 17, 'font-weight': '700', transform: `rotate(-90 22 ${m.t + ih / 2})`, 'text-anchor': 'middle' }, 'Normalized intensity'));
+      svg.appendChild(svgEl('text', { x: 22, y: m.t + ih / 2, fill: cLabel, 'font-size': 17, 'font-weight': '700', transform: `rotate(-90 22 ${m.t + ih / 2})`, 'text-anchor': 'middle' }, profileSpec.axisLabel));
 
       [cfg.yHalfWidthUm, -cfg.yHalfWidthUm].forEach(v => {
         svg.appendChild(svgEl('line', { x1: X(v), y1: m.t, x2: X(v), y2: H - m.b, stroke: cBox, 'stroke-width': 1.8, 'stroke-dasharray': '6 5' }));
@@ -1041,8 +1248,8 @@
       const linePts = [];
       for (let i = 0; i <= 700; i++) {
         const y = -yPlotMax + 2 * yPlotMax * i / 700;
-        const inten = Math.exp(-2 * Math.pow(y / b.wUm, 2));
-        const px = X(y), py = Y(inten);
+        const value = profileSpec.valueAtEdge(y, b.wUm);
+        const px = X(y), py = Y(value);
         linePts.push(`${i ? 'L' : 'M'} ${px} ${py}`);
         polyPts.push(`L ${px} ${py}`);
       }
@@ -1055,14 +1262,15 @@
         width: X(yHalfFwhm) - X(-yHalfFwhm), height: ih,
         fill: 'rgba(248,211,110,0.06)'
       }));
-      svg.appendChild(svgEl('line', { x1: X(-yHalfFwhm), y1: Y(0.5), x2: X(yHalfFwhm), y2: Y(0.5), stroke: cFwhm, 'stroke-width': 2.2, 'stroke-dasharray': '6 5' }));
+      svg.appendChild(svgEl('line', { x1: X(-yHalfFwhm), y1: Y(profileSpec.halfLevel), x2: X(yHalfFwhm), y2: Y(profileSpec.halfLevel), stroke: cFwhm, 'stroke-width': 2.2, 'stroke-dasharray': '6 5' }));
       [-yHalfFwhm, yHalfFwhm].forEach(y => {
-        svg.appendChild(svgEl('circle', { cx: X(y), cy: Y(0.5), r: 5.2, fill: cFwhm }));
+        svg.appendChild(svgEl('circle', { cx: X(y), cy: Y(profileSpec.halfLevel), r: 5.2, fill: cFwhm }));
       });
 
-      [-b.wUm, b.wUm].forEach(y => {
+      const refPts = profileSpec.e2Points(b.wUm);
+      refPts.y.forEach(y => {
         if (Math.abs(y) <= yPlotMax) {
-          svg.appendChild(svgEl('circle', { cx: X(y), cy: Y(Math.exp(-2)), r: 4.2, fill: cProfile }));
+          svg.appendChild(svgEl('circle', { cx: X(y), cy: Y(refPts.value), r: 4.2, fill: cProfile }));
         }
       });
 
@@ -1090,19 +1298,23 @@
     function updateProfileSubtitle(cfg) {
       const profileHalf = profileHalfRange(cfg);
       const envelopeHalf = envelopeView ? Math.max(Math.abs(envelopeView.yMin), Math.abs(envelopeView.yMax)) : profileHalf;
-      const profileSub = $("profilePlot").closest(".panel-body").querySelector(".plotTitle .sub");
-      if (profileSub) profileSub.textContent = `Normalized intensity at the selected longitudinal position. Horizontal range follows the envelope y-view (±${fmt(envelopeHalf)} µm, with automatic minimum fitting).`;
+      const profileSpec = getProfileSpec();
+      const profileSub = $("profileSub");
+      if (profileSub) profileSub.textContent = `${profileSpec.label} at x = ${fmt(cfg.queryXUm)} µm · y-range ±${fmt(envelopeHalf)} µm`;
     }
 
     function render() {
       const cfg = currentConfig();
       lastRenderedCfg = cfg;
+      updateModeButtons();
+      updateProfileLegend();
       buildMetrics(cfg);
       buildFormulas(cfg);
       buildClipTable(cfg);
       buildTimeTable(cfg);
       buildSummary(cfg);
       updateBadges(cfg);
+      setSliceInputValue(cfg.queryXUm);
       updateSliderLabels(cfg);
       syncSliderToX(cfg.queryXUm);
       renderEnvelope(cfg);
@@ -1150,7 +1362,7 @@
         if (!p) return;
         if (dragState.mode === 'slice') {
           const xUm = envelopeXFromPx(p.px);
-          $("queryXUm").value = fmt(xUm, 4);
+          setSliceInputValue(xUm, true);
           syncSliderToX(xUm);
           render();
         } else {
@@ -1226,7 +1438,7 @@
 
       host.addEventListener('dblclick', () => {
         const cfg = lastRenderedCfg || currentConfig();
-        $("queryXUm").value = fmt(cfg.focusDistUm, 4);
+        setSliceInputValue(cfg.focusDistUm, true);
         resetEnvelopeView(cfg);
         render();
       });
@@ -1238,12 +1450,32 @@
       const view = envelopeView || defaultEnvelopeView(cfg);
       const frac = (+$("sliceSlider").value) / 1000;
       const xUm = view.xMin + frac * (view.xMax - view.xMin);
-      $("queryXUm").value = fmt(xUm, 4);
+      setSliceInputValue(xUm, true);
       render();
+    });
+
+    $("queryXUm").addEventListener('input', () => {
+      const parsed = parseLooseNumber($("queryXUm").value);
+      if (Number.isFinite(parsed)) render();
+    });
+    $("queryXUm").addEventListener('blur', commitSliceInput);
+    $("queryXUm").addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commitSliceInput();
+      }
+    });
+
+    document.querySelectorAll('[data-profile-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        profileMode = btn.dataset.profileMode;
+        render();
+      });
     });
 
     $("resetBtn").addEventListener('click', () => {
       for (const [k, v] of Object.entries(defaults)) $(k).value = v;
+      profileMode = "intensity";
       lastFocusDistUm = defaults.focusDistUm;
       envelopeView = null;
       render();
@@ -1251,13 +1483,19 @@
 
     $("fitViewBtn").addEventListener('click', () => {
       const cfg = currentConfig();
-      $("queryXUm").value = fmt(cfg.focusDistUm, 4);
+      setSliceInputValue(cfg.focusDistUm, true);
       resetEnvelopeView(cfg);
       render();
     });
 
     $("copyBtn").addEventListener('click', async () => {
-      const text = $("summaryBox").innerText;
+      const cards = [...document.querySelectorAll('#summaryBox .summaryCard')].map(card => {
+        const label = card.querySelector('.summaryLabel')?.innerText || '';
+        const value = card.querySelector('.summaryValue')?.innerText || '';
+        const sub = card.querySelector('.summarySub')?.innerText || '';
+        return `${label}: ${value}${sub ? ` — ${sub}` : ''}`;
+      });
+      const text = cards.join('\n');
       try {
         await navigator.clipboard.writeText(text);
         $("copyBtn").textContent = 'Copied';
